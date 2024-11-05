@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POS System</title>
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #1e40af;
+      --background-color: #f3f4f6;
+      --text-color: #1f2937;
+      --border-color: #e5e7eb;
+      --success-color: #059669;
+      --danger-color: #dc2626;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.5;
+      padding: 1rem;
+    }
+
+    #pos-system {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    section {
+      background: white;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    h1,
+    h2 {
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    /* Product Entry Styles */
+    #product-entry {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    input[type="text"],input[type="select"],
+    input[type="number"] {
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.375rem;
+      font-size: 1rem;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.375rem;
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--secondary-color);
+    }
+
+    /* Item List Styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+
+    th,
+    td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: var(--background-color);
+      font-weight: 600;
+    }
+
+    #order-summary {
+      display: flex;
+      justify-content: flex-end;
+      font-size: 1.25rem;
+      font-weight: 600;
+      padding: 1rem 0;
+    }
+
+    /* Payment Section Styles */
+    #payment {
+      display: grid;
+      gap: 1rem;
+    }
+
+    #payment div {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #complete-sale {
+      background-color: var(--success-color);
+    }
+
+    #complete-sale:hover {
+      background-color: #047857;
+    }
+
+    #print-bill {
+      background-color: var(--text-color);
+    }
+
+    #print-bill:hover {
+      background-color: #111827;
+    }
+
+    /* Responsive Design */
+    @media (min-width: 768px) {
+      #pos-system {
+        grid-template-columns: 2fr 3fr;
+      }
+
+      #payment {
+        grid-column: 1 / -1;
+      }
+    }
+
+    /* Action Buttons in Table */
+    .action-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    .remove-btn {
+      background-color: var(--danger-color);
+    }
+
+    .remove-btn:hover {
+      background-color: #b91c1c;
+    }
+
+    /* Product List Styles */
+    #product-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .product-card {
+      background: white;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+    }
+
+    .product-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .sidenav {
+      height: 100%;
+      width: 0;
+      position: fixed;
+      z-index: 1;
+      top: 0;
+      left: 0;
+      background-color: #111;
+      overflow-x: hidden;
+      transition: 0.5s;
+      padding-top: 60px;
+    }
+
+    .sidenav a {
+      padding: 8px 8px 8px 32px;
+      text-decoration: none;
+      font-size: 25px;
+      color: #818181;
+      display: block;
+      transition: 0.3s;
+    }
+
+    .sidenav a:hover {
+      color: #f1f1f1;
+    }
+
+    .sidenav .closebtn {
+      position: absolute;
+      top: 0;
+      right: 25px;
+      font-size: 36px;
+      margin-left: 50px;
+    }
+
+    @media screen and (max-height: 450px) {
+      .sidenav {
+        padding-top: 15px;
+      }
+
+      .sidenav a {
+        font-size: 18px;
+      }
+    }
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5); /* semi-transparent background */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      
+    }
+    .overlay-content {
+      position: relative;
+      background-color: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin: 10px;
+      width:60%;
+    }
+    #mainclose {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: transparent;
+      border: none;
+      font-size: 30px;
+      cursor: pointer;
+      color: #111;
+    }
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      font-family: Arial, sans-serif;
+  }
+
+  .dashboard-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 15px 20px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      color: #4a5568;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+  }
+
+  .dashboard-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      background: #f8fafc;
+      color: #2d3748;
+  }
+
+  .dashboard-button:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .dashboard-button::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 3px;
+      width: 100%;
+      background: linear-gradient(to right, #4299e1, #667eea);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+  }
+
+  .dashboard-button:hover::before {
+      transform: scaleX(1);
+  }
+
+  /* Different accent colors for button categories */
+  .inventory-btn::before { background: linear-gradient(to right, #4299e1, #667eea); }
+  .sales-btn::before { background: linear-gradient(to right, #48bb78, #38b2ac); }
+  .report-btn::before { background: linear-gradient(to right, #ed8936, #ed64a6); }
+
+  @media (max-width: 768px) {
+      .dashboard-container {
+          grid-template-columns: 1fr;
+          padding: 10px;
+      }
+      
+      .dashboard-button {
+          width: 100%;
+      }
+  }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #f7fafc;
+    color: #2d3748;
+    line-height: 1.5;
+    padding: 2rem;
+}
+
+.batch-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #2d3748;
+    font-size: 1.875rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    color: #2d3748;
+    background: #fff;
+}
+
+input:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+input::placeholder {
+    color: #a0aec0;
+}
+
+input[type="date"] {
+    cursor: pointer;
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#addBatchButton {
+    background-color: #4299e1;
+    color: white;
+}
+
+#addBatchButton:hover {
+    background-color: #3182ce;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
+}
+
+#fetchExpiringButton {
+    background-color: #48bb78;
+    color: white;
+}
+
+#fetchExpiringButton:hover {
+    background-color: #38a169;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(72, 187, 120, 0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Validation Styles */
+input:invalid {
+    border-color: #fc8181;
+}
+
+input:invalid:focus {
+    border-color: #fc8181;
+    box-shadow: 0 0 0 3px rgba(252, 129, 129, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+
+    .batch-container {
+        padding: 1.5rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Loading State */
+button.loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+button.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+  </style>
+</head>
+
+<body>
+  <div id="mySidenav" class="sidenav">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="#" onclick="showPOs()">POS Dashboard</a>
+    <a href="#" onclick="showInventory()">Inventory</a>
+    <a href="#" onclick="">Sales</a>
+    <a href="#" onclick="showOrderReports()">Audits</a>
+  </div>
+
+  <span style="font-size: 30px; cursor: pointer" onclick="openNav()">&#9776;</span>
+  <div id="main">
+    <!-- Products List -->
+    <!--  <section>
+        <h2>Available Products</h2>
+        <div id="product-list">
+             Products will be added here dynamically 
+        </div>
+    </section>-->
+
+
+    <div id="overlay" style="display: none;">
+      <div class="overlay-content" id="overlay-conten">
+        <button class="close-button" id="mainclose" onclick="closeOverlays()">&times;</button>
+        <div id="overlaycon"></div>
+      </div>
+    </div>
+
+
+
+    
+
+
+    <body>
+      
+
+      
+
+
+
+      
+
+
+
+
+      
+
+
+
+
+      
+
+      
+
+
+
+
+      <h1>POS Reporting Dashboard</h1>
+
+      
+
+      <div id="reportContainer"></div>
+
+      <script>
+        const { ipcRenderer } = require('electron');
+
+        document.getElementById('salesReportBtn').addEventListener('click', async () => {
+          const startDate = prompt("Enter start date (YYYY-MM-DD):");
+          const endDate = prompt("Enter end date (YYYY-MM-DD):");
+          const salesReport = await ipcRenderer.invoke('get-sales-report', startDate, endDate);
+          displayReport(salesReport, 'Sales Report');
+        });
+
+        document.getElementById('inventoryReportBtn').addEventListener('click', async () => {
+          const inventoryReport = await ipcRenderer.invoke('get-inventory-report');
+          displayReport(inventoryReport, 'Inventory Report');
+        });
+
+        document.getElementById('financialReportBtn').addEventListener('click', async () => {
+          const startDate = prompt("Enter start date (YYYY-MM-DD):");
+          const endDate = prompt("Enter end date (YYYY-MM-DD):");
+          const financialReport = await ipcRenderer.invoke('get-financial-report', startDate, endDate);
+          displayReport(financialReport, 'Financial Report');
+        });
+
+        function displayReport(data, reportTitle) {
+          const reportContainer = document.getElementById('overlaycon');
+          reportContainer.innerHTML = `<h2>${reportTitle}</h2>`;
+          if (data.length === 0) {
+            reportContainer.innerHTML += "<p>No data found.</p>";
+            return;
+          }
+
+          const table = document.createElement('table');
+          const headers = Object.keys(data[0]);
+          const headerRow = document.createElement('tr');
+          headers.forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header;
+            headerRow.appendChild(th);
+          });
+          table.appendChild(headerRow);
+
+          data.forEach(row => {
+            const tr = document.createElement('tr');
+            headers.forEach(header => {
+              const td = document.createElement('td');
+              td.textContent = row[header];
+              tr.appendChild(td);
+            });
+            table.appendChild(tr);
+          });
+
+          reportContainer.appendChild(table);
+        }
+      </script>
+
+      
+
+     
+
+      <script>
+        document.getElementById('processReturnBtn').addEventListener('click', () => {
+          const transactionID = document.getElementById('transactionID').value;
+          const productID = document.getElementById('productID').value;
+          const quantity = document.getElementById('returnQuantity').value;
+          const reason = document.getElementById('reason').value;
+          handleReturn(transactionID, productID, quantity, reason);
+        });
+
+        document.getElementById('processRefundBtn').addEventListener('click', () => {
+          const returnID = document.getElementById('returnID').value;
+          const refundAmount = document.getElementById('refundAmount').value;
+          const method = document.getElementById('refundMethod').value;
+          handleRefund(returnID, refundAmount, method);
+        });
+
+        function showOverlay() {
+          document.getElementById("overlay").style.display = "flex";
+        }
+        function closeOverlays() {
+          document.getElementById("overlay").style.display = "none";
+        }
+      </script>
+
+
+
+
+      <!-- Low Stock Notification -->
+      
+  </div>
+  <script src="app.js"></script>
+  <script>
+    function openNav() {
+      document.getElementById("mySidenav").style.width = "250px";
+    }
+
+    function closeNav() {
+      document.getElementById("mySidenav").style.width = "0";
+    }
+
+    function showInventory() {
+      const mainContent = document.getElementById("main");
+      mainContent.innerHTML = `
+      <div id="overlay" style="display: none;">
+      <div class="overlay-content" id="overlay-conten">
+        <button class="close-button" id="mainclose" onclick="closeOverlays()">&times;</button>
+        <div id="overlaycon"></div>
+      </div>
+    </div>
+      <div class="dashboard-container">
+        <button class="dashboard-button inventory-btn" onclick="showAddProduct(),showOverlay()">Add Product</button>
+        <button class="dashboard-button inventory-btn" id="generateOrdersButton" onclick="showOverlay()">Generate Purchase Orders</button>
+        <button class="dashboard-button inventory-btn" id="fetchOrdersButton" onclick="showOverlay()">Fetch Pending Orders</button>
+        <button class="dashboard-button inventory-btn" onclick="showStockManagement(),showOverlay()">Stock Management</button>
+        <button class="dashboard-button inventory-btn" onclick="Batch_Expiry(),showOverlay()">Batch and Expiry Management</button>
+        <button class="dashboard-button inventory-btn" onclick="Audit_and_history(),showOverlay()">Inventory Audit and History</button>
+        <button class="dashboard-button sales-btn" onclick="Sales_inventory_forecasting(),showOverlay()">Sales and Inventory Forecasting</button>
+        <button class="dashboard-button inventory-btn" onclick="Inventory_dashboard(),showOverlay()">Inventory Dashboard</button>
+        <button class="dashboard-button report-btn" onclick="custom_report(),showOverlay()">Custom Stock Report</button>
+        <button class="dashboard-button sales-btn" onclick="return_refund(),showOverlay()">Returns and Refunds</button>
+        <button class="dashboard-button sales-btn" onclick="refund_process(),showOverlay()">Process Refund</button>
+        <button class="dashboard-button report-btn" id="salesReportBtn" onclick="showOverlay()">Sales Report</button>
+        <button class="dashboard-button report-btn" id="inventoryReportBtn" onclick="showOverlay()">Inventory Report</button>
+        <button class="dashboard-button report-btn" id="financialReportBtn" onclick="showOverlay()">Financial Report</button>
+        <button class="dashboard-button inventory-btn" onclick="low_stock(),showOverlay()">Check Low Stock</button>
+    </div>
+     `;
+    }
+
+    function showAddProduct() {
+
+      const managementContent = document.getElementById('overlaycon');
+
+      managementContent.innerHTML = `
+          <h2>Add New Product</h2>
+    <form id="addProductForm">
+      <input type="text" id="productName" placeholder="Product Name" required />
+      <input type="text" id="category" placeholder="Category" required />
+      <input type="number" id="price" placeholder="Price" required />
+      <input type="number" id="stockLevel" placeholder="Stock Level" required />
+      <input type="number" id="reorderLevel" placeholder="Reorder Level" required />
+      <button type="submit">Add Product</button>
+    </form>
+          `;
+    }
+
+    function showStockManagement(){
+      const managementContent = document.getElementById('overlaycon');
+
+      managementContent.innerHTML = `
+      <h1>Inventory Management</h1>
+    <input id="productId" placeholder="Product ID" type="number" required />
+    <input id="quantity" placeholder="Quantity" type="number" required />
+    <input id="remarks" placeholder="Remarks" type="text" />
+
+    <button id="addStockButton">Add Stock</button>
+    <button id="reduceStockButton">Reduce Stock</button>
+     `;
+    }
+
+
+    function Batch_Expiry(){
+      const managementContent = document.getElementById('overlaycon');
+
+      managementContent.innerHTML = `
+      <div class="batch-container">
+        <h1>Batch and Expiry Management</h1>
+        
+        <div class="form-grid">
+            <div class="input-group">
+                <label for="productId">Product ID</label>
+                <input 
+                    id="productId" 
+                    type="number" 
+                    placeholder="Enter product ID" 
+                    required 
+                />
+            </div>
+            
+            <div class="input-group">
+                <label for="supplierId">Supplier ID</label>
+                <input 
+                    id="supplierId" 
+                    type="number" 
+                    placeholder="Enter supplier ID" 
+                    required 
+                />
+            </div>
+            
+            <div class="input-group">
+                <label for="quantity">Quantity</label>
+                <input 
+                    id="quantity" 
+                    type="number" 
+                    placeholder="Enter quantity" 
+                    required 
+                />
+            </div>
+            
+            <div class="input-group">
+                <label for="expiryDate">Expiry Date</label>
+                <input 
+                    id="expiryDate" 
+                    type="date" 
+                    required 
+                />
+            </div>
+            
+            <div class="input-group">
+                <label for="daysBeforeExpiry">Days Before Expiry</label>
+                <input 
+                    id="daysBeforeExpiry" 
+                    type="number" 
+                    placeholder="Enter days before expiry" 
+                    required 
+                />
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button id="addBatchButton">Add Batch</button>
+            <button id="fetchExpiringButton">Fetch Expiring Products</button>
+        </div>
+      `;
+    }
+
+    document.querySelectorAll('button').forEach(button => {
+      button.addEventListener('click', function() {
+          this.classList.add('loading');
+          setTimeout(() => {
+              this.classList.remove('loading');
+          }, 1000);
+      });
+  });
+
+    function Audit_and_history (){
+      const managementContent = document.getElementById('overlaycon');
+
+      managementContent.innerHTML = `
+      <h1>Inventory Audit and History Tracking</h1>
+
+      <h2>Log Inventory Transaction</h2>
+      <input id="transactionProductId" placeholder="Product ID" type="number" required />
+
+      <select id="transactionType">
+        <option value="Sale">Sale</option>
+        <option value="Adjustment">Adjustment</option>
+        <option value="Purchase">Purchase</option>
+      </select>
+
+      <input id="transactionQuantity" placeholder="Quantity" type="number" required />
+      <input id="transactionRemarks" placeholder="Remarks" type="text" />
+      <button id="logTransactionButton">Log Transaction</button>
+
+      <h2>Generate Audit Report</h2>
+      <button id="generateReportButton">Generate Report</button>`;
+    }
+
+    function Sales_inventory_forecasting(){
+      const managementContent = document.getElementById('overlaycon');
+
+      managementContent.innerHTML = `
+      <h1>Sales and Inventory Forecasting</h1>
+
+      <h2>Forecast Sales</h2>
+      <input id="forecastProductId" placeholder="Product ID" type="number" required />
+      <input id="startDate" placeholder="Start Date" type="date" required />
+      <input id="endDate" placeholder="End Date" type="date" required />
+      <input id="forecastPeriod" placeholder="Forecast Period (Days)" type="number" required />
+      <button id="forecastSalesButton">Forecast Sales</button>
+
+      <h2>Forecast Stock Usage</h2>
+      <input id="stockUsageProductId" placeholder="Product ID" type="number" required />
+      <input id="leadTime" placeholder="Lead Time (Days)" type="number" required />
+      <button id="forecastStockUsageButton">Forecast Stock Usage</button>`;
+    }
+
+    function Inventory_dashboard(){
+      const managementContent = document.getElementById('overlaycon');
+
+      managementContent.innerHTML = `
+      <h1>Inventory Dashboard</h1>
+
+      <h2>Inventory Overview</h2>
+      <button id="loadOverviewButton">Load Inventory Overview</button>
+      <table id="overviewTable">
+        <!-- Populate with inventory overview data -->
+      </table>
+
+      <h2>Stock Aging Report</h2>
+      <button id="loadStockAgingButton">Load Stock Aging Report</button>
+      <table id="agingTable">
+        <!-- Populate with stock aging data -->
+      </table>
+      `;
+    }
+
+    function custom_report(){
+      const managementContent = document.getElementById('overlaycon');
+
+      managementContent.innerHTML = `
+      <h2>Custom Stock Report</h2>
+      <input id="customStartDate" placeholder="Start Date" type="date" required />
+      <input id="customEndDate" placeholder="End Date" type="date" required />
+      <input id="customCategory" placeholder="Category" type="text" />
+      <input id="customSupplierId" placeholder="Supplier ID" type="number" />
+      <button id="loadCustomReportButton">Load Custom Stock Report</button>
+      <table id="customReportTable">
+        <!-- Populate with custom stock report data -->
+      </table>`;
+    }
+
+    function return_refund(){
+      const managementContent = document.getElementById('overlaycon');
+
+      managementContent.innerHTML = `
+      <h2>Returns and Refunds Management</h2>
+
+      <h3>Process Return</h3>
+      <label for="transactionID">Transaction ID:</label>
+      <input type="number" id="transactionID" required>
+      <label for="productID">Product ID:</label>
+      <input type="number" id="productID" required>
+      <label for="returnQuantity">Quantity:</label>
+      <input type="number" id="returnQuantity" required>
+      <label for="reason">Reason:</label>
+      <input type="text" id="reason" required>
+      <button id="processReturnBtn">Process Return</button>`;
+    }
+
+    function refund_process(){
+      const managementContent = document.getElementById('overlaycon');
+
+      managementContent.innerHTML = `
+      <h3>Process Refund</h3>
+      <label for="returnID">Return ID:</label>
+      <input type="number" id="returnID" required>
+      <label for="refundAmount">Refund Amount:</label>
+      <input type="number" step="0.01" id="refundAmount" required>
+      <label for="refundMethod">Method:</label>
+      <input type="text" id="refundMethod" required>
+      <button id="processRefundBtn">Process Refund</button>
+      `;
+    }
+
+    function low_stock(){
+      const managementContent = document.getElementById('overlaycon');
+
+      managementContent.innerHTML = `
+      <h2>Low Stock Products</h2>
+      <ul id="lowStockList"></ul>`;
+    }
+
+
+    function showPOs() {
+      const mainContent = document.getElementById("main");
+      mainContent.innerHTML = `
+        <div id="pos-system">
+        <!-- Product Entry Section -->
+        <section id="product-entry">
+          <h2>Scan or Enter Product</h2>
+          <input
+            type="text"
+            id="product-barcode"
+            placeholder="Scan barcode or enter product ID"
+          />
+          <button id="add-product">Add Product</button>
+        </section>
+
+        <!-- Item List Section -->
+        <section id="item-list">
+          <h2>Current Order</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="items-table">
+              <!-- Items will be added here dynamically -->
+            </tbody>
+          </table>
+          <div id="order-summary">
+            <div>Total: Rs.<span id="total-amount">0.00</span></div>
+          </div>
+        </section>
+
+        <!-- Payment Section -->
+        <section id="payment">
+          <h2>Payment Details</h2>
+          <div>
+            <label for="amount-given">Amount Received:</label>
+            <input
+              type="number"
+              id="amount-given"
+              placeholder="Enter amount"
+              min="0"
+              step="0.01"
+            />
+          </div>
+          <div>
+            <label for="change">Change Due:</label>
+            <span id="change">Rs.0.00</span>
+          </div>
+          <div style="display: flex; gap: 1rem">
+            <button id="complete-sale">Complete Sale</button>
+            <button id="print-bill">Print Receipt</button>
+          </div>
+        </section>
+      </div>
+      <section id="order-summary">
+        <div>Total: Rs.<span id="total-amount">0.00</span></div>
+        <div>
+          Discount (%):
+          <input type="text" id="discount" placeholder="0" min="0" max="100" />
+        </div>
+        <div>Discounted Total: $<span id="discounted-total">0.00</span></div>
+      </section>
+`;
+    }
+
+    function showOrderReports() {
+      const mainContent = document.getElementById("main");
+      mainContent.innerHTML = `
+              <div id="order-report">
+                 <h1>Audit Logs</h1>
+    <table id="auditLogTable">
+        <thead>
+            <tr>
+                <th>Log ID</th>
+                <th>User ID</th>
+                <th>Action Type</th>
+                <th>Description</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Logs will be dynamically inserted here -->
+        </tbody>
+    </table>
+    <button onclick="loadAuditLogs()">Refresh Logs</button>
+              </div>
+            `;
+    }
+  </script>
+</body>
+
+</html>
